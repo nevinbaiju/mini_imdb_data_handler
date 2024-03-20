@@ -1,0 +1,24 @@
+FROM ubuntu:latest
+
+RUN  apt-get update \
+  && apt-get install -y wget \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN wget https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_linux-x64_bin.tar.gz
+RUN tar -xvf openjdk-21.0.2_linux-x64_bin.tar.gz
+RUN mv jdk-21.0.2 /opt/
+
+RUN wget https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz
+RUN tar -xvf apache-maven-3.9.6-bin.tar.gz
+RUN mv apache-maven-3.9.6 /opt/
+
+WORKDIR /app
+
+COPY src .
+COPY pom.xml .
+
+ENV MAVEN_OPTS "-Xms256m -Xmx512m"
+
+ENV PATH "$PATH:/opt/jdk-21.0.2/bin:/opt/apache-maven-3.9.6/bin"
+
+CMD ["ls"]
