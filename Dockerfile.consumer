@@ -14,11 +14,13 @@ RUN mv apache-maven-3.9.6 /opt/
 
 WORKDIR /app
 
-COPY src .
+COPY src ./src
 COPY pom.xml .
 
 ENV MAVEN_OPTS "-Xms256m -Xmx512m"
 
 ENV PATH "$PATH:/opt/jdk-21.0.2/bin:/opt/apache-maven-3.9.6/bin"
 
-CMD ["ls"]
+RUN mvn compile
+
+CMD ["mvn", "exec:java", "-Dexec.mainClass=com.alpha.consumer.consumer"]

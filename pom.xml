@@ -7,7 +7,7 @@
   <version>alpha</version>
   <name>Maven Quick Start</name>
   <build>
-    <sourceDirectory>src/main/javsdfda</sourceDirectory>
+    <sourceDirectory>src/main/java</sourceDirectory>
     <testSourceDirectory>test</testSourceDirectory>
   </build>
   <dependencies>
