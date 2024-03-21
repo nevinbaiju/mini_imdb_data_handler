@@ -47,7 +47,7 @@ public class consumer {
                         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
                         String timeStamp = currentDateTime.format(formatter);
                         try (BufferedWriter writer = new BufferedWriter(new FileWriter(String.format("data/dumps/ratings_dump_%s.csv", timeStamp), true))) {
-                            System.out.println(String.format("Dumped 50000 lines.", args));
+                            System.out.println("Dumped 50000 lines.");
                             writer.write(buffer);
                         } catch (IOException e) {
                             e.printStackTrace();
