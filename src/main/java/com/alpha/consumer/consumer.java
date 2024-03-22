@@ -19,7 +19,7 @@ public class consumer {
     public static void main(String[] args) {
         // Kafka consumer configurations
         Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092,kafka:9092");
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "kafka-consumer-group");
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
@@ -42,7 +42,7 @@ public class consumer {
                 ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
                 for (ConsumerRecord<String, String> record : records) {
                     // Print received message
-                    if(line_count == 50000){
+                    if(line_count == 1000){
                         LocalDateTime currentDateTime = LocalDateTime.now();
                         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
                         String timeStamp = currentDateTime.format(formatter);
@@ -65,7 +65,6 @@ public class consumer {
                     buffer = buffer + jsonObject.getDouble("old_rating") + '\n';
                     
                     // System.out.println("Line Count: " + line_count);
-                    // System.out.println("Received message: " + rating_string + "\n");
                     // System.out.println("Received message: \n" + buffer);
                 }
             }
