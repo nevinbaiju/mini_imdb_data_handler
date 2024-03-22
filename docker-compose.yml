@@ -1,9 +1,27 @@
 services:
+  zookeeper:
+    image: docker.io/bitnami/zookeeper:3.9
+    ports:
+      - "2181:2181"
+    volumes:
+      - "zookeeper_data:/bitnami"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+  kafka:
+    image: docker.io/bitnami/kafka:3.4
+    ports:
+      - "9092:9092"
+    volumes:
+      - "kafka_data:/bitnami"
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+    depends_on:
+      - zookeeper
+      
   producer:
     build:
       context: ./python
       dockerfile: Dockerfile.python
-    network_mode: host
     volumes:
       - ./data:/app/data
       - ./python:/app/python
@@ -12,7 +30,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.consumer
-    network_mode: host
     volumes:
       - ./data:/app/data
       - ./helloworld.java:/app/helloworld.java
+
+
+volumes:
+  zookeeper_data:
+    driver: local
+  kafka_data:
+    driver: local
