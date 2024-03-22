@@ -4,3 +4,5 @@ commands
 *.class
 *.ipynb_checkpoints
 *.ipynb
+helloworld.java
+*.class
