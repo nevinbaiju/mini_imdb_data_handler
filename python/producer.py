@@ -2,12 +2,26 @@ import pandas as pd
 import numpy as np
 
 from pykafka import KafkaClient
+from pykafka.exceptions import NoBrokersAvailableError
 
 import time
 import random
 import json
 
-client = KafkaClient(hosts="127.0.0.1:9092")
+tries = 0
+while True:
+    try:
+        tries += 1
+        client = KafkaClient(hosts="127.0.0.1:9092,kafka:9092")
+        print("Connection success")
+        break
+    except NoBrokersAvailableError:
+        if tries == 5:
+            print("No brokers found to connect. Exiting...")
+            exit()
+        else:
+            print("Connection failed. Retrying...")
+            time.sleep(5)
 
 movie_reviews_topic = client.topics['movie_reviews']
 
