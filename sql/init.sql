@@ -5,12 +5,12 @@ USE movie_db;
 CREATE TABLE IF NOT EXISTS avg_ratings (
     movie_id INT PRIMARY KEY,
     title VARCHAR(255),
-    avg_rating DECIMAL(2, 2),
-    rating_std DECIMAL(2, 2),
+    avg_rating DECIMAL(3, 2),
+    rating_std DECIMAL(3, 2),
     count INT
 );
 
-LOAD DATA INFILE '/data/avg_ratings.csv'
+LOAD DATA INFILE '/var/lib/mysql-files/avg_ratings.csv'
 INTO TABLE avg_ratings
 FIELDS TERMINATED BY ',' 
 ENCLOSED BY '"'

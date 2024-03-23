@@ -42,7 +42,7 @@ public class consumer {
                 ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
                 for (ConsumerRecord<String, String> record : records) {
                     // Print received message
-                    if(line_count == 1000){
+                    if(line_count == 50000){
                         LocalDateTime currentDateTime = LocalDateTime.now();
                         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
                         String timeStamp = currentDateTime.format(formatter);
