@@ -60,7 +60,7 @@ public class consumer {
                     JSONObject jsonObject = new JSONObject(rating_string);
                     
                     buffer = buffer + jsonObject.getInt("movie_id") + ',';
-                    buffer = buffer + jsonObject.getString("title") + ',';
+                    buffer = buffer + String.format("\"%s\",", jsonObject.getString("title"));
                     buffer = buffer + jsonObject.getDouble("rating") + ',';
                     buffer = buffer + jsonObject.getDouble("old_rating") + '\n';
                     
