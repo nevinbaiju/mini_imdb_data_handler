@@ -7,7 +7,15 @@ CREATE TABLE IF NOT EXISTS avg_ratings (
     title VARCHAR(255),
     avg_rating DECIMAL(3, 2),
     rating_std DECIMAL(3, 2),
-    count INT
+    count INT,
+    release_year INT
+);
+
+CREATE TABLE IF NOT EXISTS movie_ranks (
+    movie_id INT,
+    movie_rank INT,
+    rank_diff INT,
+    FOREIGN KEY (movie_id) REFERENCES avg_ratings(movie_id)
 );
 
 LOAD DATA INFILE '/var/lib/mysql-files/avg_ratings.csv'
@@ -16,4 +24,12 @@ FIELDS TERMINATED BY ','
 ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
 IGNORE 1 LINES
-(movie_id, title, avg_rating, rating_std, count);
+(movie_id, title, avg_rating, rating_std, count, release_year);
+
+LOAD DATA INFILE '/var/lib/mysql-files/rankings.csv'
+INTO TABLE movie_ranks
+FIELDS TERMINATED BY ',' 
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES
+(movie_id, movie_rank, rank_diff);
