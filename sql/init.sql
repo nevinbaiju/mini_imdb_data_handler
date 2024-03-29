@@ -33,3 +33,23 @@ ENCLOSED BY '"'
 LINES TERMINATED BY '\n'
 IGNORE 1 LINES
 (movie_id, movie_rank, rank_diff);
+
+CREATE TABLE top_10_movies (
+    title VARCHAR(255),
+    avg_rating DECIMAL(5,2),
+    release_year INT,
+    movie_rank INT
+);
+
+INSERT INTO top_10_movies
+SELECT 
+    avg.title, 
+    avg.avg_rating, 
+    avg.release_year, 
+    rnk.movie_rank
+FROM
+    avg_ratings AS avg 
+JOIN 
+    movie_ranks AS rnk ON avg.movie_id = rnk.movie_id
+ORDER BY rnk.movie_rank
+LIMIT 10;
