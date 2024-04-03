@@ -1,0 +1,16 @@
+FROM apache/airflow:latest
+
+COPY python/requirements.txt /requirements.txt
+
+RUN pip install -r /requirements.txt
+
+USER root
+
+RUN apt-get update && apt-get install -y \
+    wget
+
+COPY airflow/start.sh /start.sh
+RUN chmod +x /start.sh
+USER airflow
+
+ENTRYPOINT ["/bin/bash","/start.sh"]
