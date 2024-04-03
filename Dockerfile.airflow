@@ -7,7 +7,7 @@ RUN pip install -r /requirements.txt
 USER root
 
 RUN apt-get update && apt-get install -y \
-    wget
+    telnet
 
 COPY airflow/start.sh /start.sh
 RUN chmod +x /start.sh

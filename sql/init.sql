@@ -1,3 +1,15 @@
+/*
+Airflow DB's and Tables
+*/
+
+CREATE DATABASE airflow_db;
+CREATE USER airflow_admin IDENTIFIED BY 'password';
+GRANT ALL ON airflow_db.* TO airflow_admin;
+
+/*
+Data DB's and tables
+*/
+
 CREATE DATABASE IF NOT EXISTS movie_db;
 
 USE movie_db;
