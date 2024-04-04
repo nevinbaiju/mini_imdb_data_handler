@@ -1,13 +1,19 @@
 FROM apache/airflow:latest
 
 COPY python/requirements.txt /requirements.txt
+COPY python/dags/dag_test.py /opt/airflow/dags/
 
 RUN pip install -r /requirements.txt
 
 USER root
 
 RUN apt-get update && apt-get install -y \
-    telnet
+    wget
+
+RUN wget https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_linux-x64_bin.tar.gz
+RUN tar -xvf openjdk-21.0.2_linux-x64_bin.tar.gz
+RUN mv jdk-21.0.2 /opt/
+ENV PATH "$PATH:/opt/jdk-21.0.2/bin"
 
 COPY airflow/start.sh /start.sh
 RUN chmod +x /start.sh
