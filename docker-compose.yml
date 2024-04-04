@@ -79,7 +79,13 @@ services:
 
     #   _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
     volumes:
-      - ./data/airflow:/opt/airflow
+      - ./data/airflow/config:/opt/airflow/config
+      - ./data/airflow/logs:/opt/airflow/logs
+      - ./data/airflow/plugins:/opt/airflow/plugins
+      - ./data/airflow/scheduler:/opt/airflow/scheduler
+      - ./data/dumps:/opt/data/dumps
+      - ./python/dags:/opt/airflow/dags
+      - ./jars:/opt/jars/
     user: "${AIRFLOW_UID:-50000}:0"
     ports:
       - "8080:8080"
