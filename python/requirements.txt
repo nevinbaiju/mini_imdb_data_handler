@@ -1,3 +1,5 @@
 pandas
 numpy
 pykafka
+pyspark
+mysql-connector-python
