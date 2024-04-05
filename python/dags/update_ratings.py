@@ -26,5 +26,10 @@ t_spark_aggregate = PythonOperator(
                                     python_callable=spark_aggregate,
                                     dag=dag
                                 )
+t_update_ranks = PythonOperator(
+                                    task_id='update_ranks',
+                                    python_callable=update_ranks,
+                                    dag=dag
+                                )                
 
-t_spark_aggregate                                
+t_spark_aggregate >> t_update_ranks
