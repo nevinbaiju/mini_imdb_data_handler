@@ -37,7 +37,7 @@ def spark_aggregate():
     mysql_df = spark.read.format("jdbc") \
                     .option("url", "jdbc:mysql://mysql:3306/movie_db") \
                     .option("driver", "com.mysql.cj.jdbc.Driver") \
-                    .option("dbtable", "(SELECT * FROM avg_ratings WHERE movie_id IN (" + in_clause + ")) as avg_ratings_filtered") \
+                    .option("dbtable", "(SELECT * FROM avg_ratings WHERE movie_id IN (" + in_clause + ")) AS avg_ratings_filtered") \
                     .option("user", "root") \
                     .option("password", "password") \
                     .load()
@@ -63,7 +63,7 @@ def update_ranks():
     top_movies = spark.read.format("jdbc") \
                         .option("url", "jdbc:mysql://mysql:3306/movie_db") \
                         .option("driver", "com.mysql.cj.jdbc.Driver") \
-                        .option("dbtable", "(SELECT * FROM avg_ratings WHERE count > 5000) as top_avg_ratings") \
+                        .option("dbtable", "(SELECT * FROM avg_ratings WHERE count > 5000) AS top_avg_ratings") \
                         .option("user", "root") \
                         .option("password", "password") \
                         .load()
@@ -74,7 +74,7 @@ def update_ranks():
     rank_df = spark.read.format("jdbc") \
                         .option("url", "jdbc:mysql://mysql:3306/movie_db") \
                         .option("driver", "com.mysql.cj.jdbc.Driver") \
-                        .option("dbtable", "(SELECT movie_id, movie_rank as old_rank, rank_diff FROM movie_ranks) as movie_ranks") \
+                        .option("dbtable", "(SELECT movie_id, movie_rank AS old_rank, rank_diff FROM movie_ranks) AS movie_ranks") \
                         .option("user", "root") \
                         .option("password", "password") \
                         .load()
@@ -100,3 +100,39 @@ def update_ranks():
         .option("password", "password") \
         .mode("append") \
         .save()
+
+def find_top_10():
+    spark = SparkSession.builder \
+           .appName('SparkByExamples.com') \
+           .config("spark.jars", "../jars/mysql-connector-j-8.3.0.jar") \
+           .getOrCreate()
+    
+    top_10_query = "SELECT t1.title, t1.avg_rating, t1.release_year FROM avg_ratings AS t1 join movie_ranks AS t2 ON t1.movie_id = t2.movie_id ORDER BY t2.movie_rank LIMIT 10"
+    top_10_trending_query = "SELECT t1.title, t1.avg_rating, t1.release_year, t2.rank_diff FROM avg_ratings AS t1 join movie_ranks AS t2 ON t1.movie_id = t2.movie_id ORDER BY t2.rank_diff DESC LIMIT 10"
+    bot_10_trending_query = "SELECT t1.title, t1.avg_rating, t1.release_year, t2.rank_diff FROM avg_ratings AS t1 join movie_ranks AS t2 ON t1.movie_id = t2.movie_id ORDER BY t2.rank_diff LIMIT 10"
+
+    top_10_df = spark.read.format("jdbc") \
+                    .option("url", "jdbc:mysql://mysql:3306/movie_db") \
+                    .option("driver", "com.mysql.cj.jdbc.Driver") \
+                    .option("query", top_10_query) \
+                    .option("user", "root") \
+                    .option("password", "password") \
+                    .load()
+    top_10_trending_df = spark.read.format("jdbc") \
+                    .option("url", "jdbc:mysql://mysql:3306/movie_db") \
+                    .option("driver", "com.mysql.cj.jdbc.Driver") \
+                    .option("query", top_10_trending_query) \
+                    .option("user", "root") \
+                    .option("password", "password") \
+                    .load()
+    bot_10_trending_df = spark.read.format("jdbc") \
+                    .option("url", "jdbc:mysql://mysql:3306/movie_db") \
+                    .option("driver", "com.mysql.cj.jdbc.Driver") \
+                    .option("query", bot_10_trending_query) \
+                    .option("user", "root") \
+                    .option("password", "password") \
+                    .load()
+    
+    top_10_df.write.csv('outputs/top_10_movies.csv', header=True)
+    top_10_trending_df.write.csv('outputs/top_10_trending.csv', header=True)
+    bot_10_trending_df.write.csv('outputs/bot_10_trending.csv', header=True)

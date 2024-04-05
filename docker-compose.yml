@@ -84,6 +84,7 @@ services:
       - ./data/airflow/plugins:/opt/airflow/plugins
       - ./data/airflow/scheduler:/opt/airflow/scheduler
       - ./data/dumps:/opt/data/dumps
+      - ./data/outputs:/opt/airflow/outputs
       - ./python/dags:/opt/airflow/dags
       - ./jars:/opt/jars/
     user: "${AIRFLOW_UID:-50000}:0"
