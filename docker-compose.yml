@@ -1,47 +1,22 @@
-# x-airflow-common:
-#   &airflow-common
-#   image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.8.4}
-#   environment:
-#     &airflow-common-env
-#     AIRFLOW__CORE__EXECUTOR: LocalExecutor
-#     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: AIRFLOW__CORE__SQL_ALCHEMY_CONN=mysql://root:{MYSQL_ROOT_PASSWORD}@mysql:3306/airflow
-#     AIRFLOW__CORE__FERNET_KEY: ''
-#     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
-#     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-#     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
-#     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
-#     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
-#   volumes:
-#     &airflow-common-vols
-#     - ./data/airflow/dags:/opt/airflow/dags
-#     - ./data/airflow/logs:/opt/airflow/logs
-#     - ./data/airflow/plugins:/opt/airflow/plugins
-#     - ./data/airflow/config:/opt/airflow/config
-#   user: "50000:0"
-#   depends_on:
-#     &airflow-common-depends-on
-#     mysql:
-#       condition: service_healthy
-
 services:
-  # zookeeper:
-  #   image: docker.io/bitnami/zookeeper:3.9
-  #   ports:
-  #     - "2181:2181"
-  #   volumes:
-  #     - "zookeeper_data:/bitnami"
-  #   environment:
-  #     - ALLOW_ANONYMOUS_LOGIN=yes
-  # kafka:
-  #   image: docker.io/bitnami/kafka:3.4
-  #   ports:
-  #     - "9092:9092"
-  #   volumes:
-  #     - "kafka_data:/bitnami"
-  #   environment:
-  #     - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
-  #   depends_on:
-  #     - zookeeper
+  zookeeper:
+    image: docker.io/bitnami/zookeeper:3.9
+    ports:
+      - "2181:2181"
+    volumes:
+      - "zookeeper_data:/bitnami"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+  kafka:
+    image: docker.io/bitnami/kafka:3.4
+    ports:
+      - "9092:9092"
+    volumes:
+      - "kafka_data:/bitnami"
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+    depends_on:
+      - zookeeper
   mysql:
     build:
       context: .
@@ -66,18 +41,16 @@ services:
       context: .
       dockerfile: Dockerfile.airflow
     environment:
-      # AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: mysql://${AIRFLOW_DB_USER}:${AIRFLOW_DB_PASSWORD}@mysql:3306/airflow_db
       AIRFLOW__CORE__FERNET_KEY: ''
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
       AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
       AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
       AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
+      AIRFLOW__CORE__DEFAULT_TIMEZONE: America/Cancun
       _AIRFLOW_WWW_USER_CREATE: 'true'
       _AIRFLOW_WWW_USER_USERNAME: ${AIRFLOW_ADMIN_USERNAME}
       _AIRFLOW_WWW_USER_PASSWORD: ${AIRFLOW_ADMIN_PASSWORD}
-
-    #   _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
     volumes:
       - ./data/airflow/config:/opt/airflow/config
       - ./data/airflow/logs:/opt/airflow/logs
@@ -94,25 +67,25 @@ services:
       - mysql
     restart: on-failure
       
-#   producer:
-#     build:
-#       context: ./python
-#       dockerfile: Dockerfile.python
-#     volumes:
-#       - ./data:/app/data
-#       - ./python:/app/python
+  producer:
+    build:
+      context: ./python
+      dockerfile: Dockerfile.python
+    volumes:
+      - ./data:/app/data
+      - ./python:/app/python
 
-#   consumer:
-#     build:
-#       context: .
-#       dockerfile: Dockerfile.consumer
-#     volumes:
-#       - ./data:/app/data
-#       - ./helloworld.java:/app/helloworld.java
+  consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile.consumer
+    volumes:
+      - ./data:/app/data
+      - ./helloworld.java:/app/helloworld.java
 
 
-# volumes:
-#   zookeeper_data:
-#     driver: local
-#   kafka_data:
-#     driver: local
+volumes:
+  zookeeper_data:
+    driver: local
+  kafka_data:
+    driver: local

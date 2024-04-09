@@ -32,7 +32,7 @@ with movie_reviews_topic.get_sync_producer() as producer:
     while True:
     # for i in range(10):
         movie_id = random.choice(movie_ids)
-        movie_id, title, avg_rating, rating_std, count = avg_ratings[avg_ratings['movie_id'] == movie_id].values[0]
+        movie_id, title, avg_rating, rating_std, count, year = avg_ratings[avg_ratings['movie_id'] == movie_id].values[0]
 
         rating_dict = {}
         rating_dict['rating'] = np.ceil(max(min(np.random.normal(avg_rating, rating_std), 5), 0))

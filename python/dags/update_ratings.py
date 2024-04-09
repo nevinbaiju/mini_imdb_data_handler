@@ -24,8 +24,15 @@ dag = DAG(
 t_spark_aggregate = PythonOperator(
                                     task_id='spark_aggregate',
                                     python_callable=spark_aggregate,
+                                    provide_context=True,
                                     dag=dag
                                 )
+t_delete_files = PythonOperator(
+                                    task_id='delete_files',
+                                    python_callable=delete_files,
+                                    provide_context=True,
+                                    dag=dag,
+)                                
 t_update_ranks = PythonOperator(
                                     task_id='update_ranks',
                                     python_callable=update_ranks,
@@ -37,4 +44,4 @@ t_find_top_10 = PythonOperator(
                                     dag=dag
                                 )                                
 
-t_spark_aggregate >> t_update_ranks >> t_find_top_10
+t_spark_aggregate >> [t_update_ranks, t_delete_files] >> t_find_top_10
