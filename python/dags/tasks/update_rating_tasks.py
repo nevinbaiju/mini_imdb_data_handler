@@ -79,52 +79,50 @@ def delete_files(**kwargs):
         except FileNotFoundError as e:
             print(f"{file} not found")
 
-def update_ranks():
-    spark = SparkSession.builder \
-           .appName('SparkByExamples.com') \
-           .config("spark.jars", "../jars/mysql-connector-j-8.3.0.jar") \
-           .getOrCreate()
-    top_movies = spark.read.format("jdbc") \
-                        .option("url", "jdbc:mysql://mysql:3306/movie_db") \
-                        .option("driver", "com.mysql.cj.jdbc.Driver") \
-                        .option("dbtable", "(SELECT * FROM avg_ratings WHERE count > 5000) AS top_avg_ratings") \
-                        .option("user", "root") \
-                        .option("password", "password") \
-                        .load()
-    
-    sorted_df = top_movies.orderBy(col("avg_rating").desc())
-    windowSpec = Window.orderBy(col("avg_rating").desc())
-    sorted_df = sorted_df.withColumn("movie_rank", row_number().over(windowSpec))
-    rank_df = spark.read.format("jdbc") \
-                        .option("url", "jdbc:mysql://mysql:3306/movie_db") \
-                        .option("driver", "com.mysql.cj.jdbc.Driver") \
-                        .option("dbtable", "(SELECT movie_id, movie_rank AS old_rank, rank_diff FROM movie_ranks) AS movie_ranks") \
-                        .option("user", "root") \
-                        .option("password", "password") \
-                        .load()
-    rank_df = sorted_df.join(rank_df, on=['movie_id'], how='left')
-    rank_df = rank_df.withColumn("rank_diff", col("old_rank") - col("movie_rank"))
-    rank_df = rank_df.na.fill(0)
+def update_rankings_in_db(rows):
     connection = mysql.connector.connect(
-        host="mysql",
+        host="localhost",
         port=3306,
         user="root",
         password="password",
         database="movie_db"
     )
     cursor = connection.cursor()
-    cursor.execute("TRUNCATE TABLE movie_ranks")
+    update_query = f"UPDATE movie_ranks SET movie_rank = %s, rank_diff = %s WHERE movie_id = %s"
+    for row in rows:
+        cursor.execute(update_query, (row['movie_rank'], row['rank_diff'], row['movie_id']))
     connection.commit()
+    cursor.close()
+    connection.close()
 
-    rank_df = rank_df.select('movie_id', 'movie_rank', 'rank_diff')
-    rank_df.write.format("jdbc") \
-        .option("url", "jdbc:mysql://mysql:3306/movie_db") \
-        .option("driver", "com.mysql.cj.jdbc.Driver") \
-        .option("dbtable", "movie_ranks") \
-        .option("user", "root") \
-        .option("password", "password") \
-        .mode("append") \
-        .save()
+def update_ranks():
+    spark = SparkSession.builder \
+       .appName('SparkByExamples.com') \
+       .config("spark.jars", "../jars/mysql-connector-j-8.3.0.jar") \
+       .getOrCreate()
+    
+    query = "SELECT \
+                t1.avg_rating as avg_rating, t1.movie_id as movie_id, t2.movie_rank as movie_rank \
+            FROM \
+                avg_ratings as t1  LEFT JOIN movie_ranks as t2 ON t1.movie_id = t2.movie_id \
+            WHERE \
+            t1.count > 5000"
+    top_movies = spark.read.format("jdbc") \
+                        .option("url", "jdbc:mysql://localhost:3306/movie_db") \
+                        .option("driver", "com.mysql.cj.jdbc.Driver") \
+                        .option("dbtable", f"({query}) as top_avg_ratings") \
+                        .option("user", "root") \
+                        .option("password", "password") \
+                        .load()
+    
+    sorted_df = top_movies.orderBy('avg_rating', ascending=False)
+    windowSpec = Window.orderBy(col("avg_rating").desc())
+    rank_df = sorted_df.withColumn("new_rank", row_number().over(windowSpec)-1)
+    rank_df = rank_df.withColumn("rank_diff", col("movie_rank") - col("new_rank"))\
+                                    .select('movie_id', 'new_rank', 'rank_diff')\
+                                    .withColumnRenamed("new_rank", "movie_rank")
+    
+    update_rankings_in_db(rank_df.collect())
 
 def find_top_10():
     top_10_query = "SELECT t1.title, t1.avg_rating, t1.release_year \
