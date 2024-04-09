@@ -62,7 +62,7 @@ def spark_aggregate(**kwargs):
                                     (col('new_count')), 2)
                                 )
         rows = result_df.collect()
-        row_list = [(str(row['movie_id']), str(row['title']), str(row['avg_rating']), 
+        row_list = [(str(row['movie_id']), str(row['title']), str(row['new_avg_rating']), 
                     str(row['rating_std']), str(row['count']), str(row['release_year'])) for row in rows]
         spark.stop()
         write_avg_ratings(row_list)
@@ -74,7 +74,10 @@ def delete_files(**kwargs):
     with open('outputs/files', 'w') as file:
         file.write("\n".join(files_list))
     for file in files_list:
-        os.remove(file)
+        try:
+            os.remove(file)
+        except FileNotFoundError as e:
+            print(f"{file} not found")
 
 def update_ranks():
     spark = SparkSession.builder \
