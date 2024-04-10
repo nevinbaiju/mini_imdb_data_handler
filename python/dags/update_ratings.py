@@ -7,7 +7,7 @@ from tasks.update_rating_tasks import *
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': datetime(2024, 4, 4),
+    'start_date': None,
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 0,
@@ -17,8 +17,9 @@ default_args = {
 dag = DAG(
     'update_ratings',
     default_args=default_args,
+    max_active_runs=1,
     description='Updates the ratings from rating dumps',
-    schedule_interval=None,
+    schedule_interval=timedelta(minutes=30),
 )
 
 t_spark_aggregate = PythonOperator(

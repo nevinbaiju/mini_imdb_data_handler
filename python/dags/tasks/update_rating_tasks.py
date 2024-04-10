@@ -81,7 +81,7 @@ def delete_files(**kwargs):
 
 def update_rankings_in_db(rows):
     connection = mysql.connector.connect(
-        host="localhost",
+        host="mysql",
         port=3306,
         user="root",
         password="password",
@@ -108,7 +108,7 @@ def update_ranks():
             WHERE \
             t1.count > 5000"
     top_movies = spark.read.format("jdbc") \
-                        .option("url", "jdbc:mysql://localhost:3306/movie_db") \
+                        .option("url", "jdbc:mysql://mysql:3306/movie_db") \
                         .option("driver", "com.mysql.cj.jdbc.Driver") \
                         .option("dbtable", f"({query}) as top_avg_ratings") \
                         .option("user", "root") \
